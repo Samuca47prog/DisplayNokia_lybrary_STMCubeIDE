@@ -1,0 +1,3 @@
+# commit 00 - code from attolic to Cube
+- attolic code changed by the teacher to work in STMCubeIDE;
+- Display OK!
