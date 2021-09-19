@@ -27,9 +27,9 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  00020234  2**0
                   CONTENTS, READONLY
- 12 .debug_info   0000a23e  00000000  00000000  00020264  2**0
+ 12 .debug_info   0000a23f  00000000  00000000  00020264  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 000017bd  00000000  00000000  0002a4a2  2**0
+ 13 .debug_abbrev 000017bd  00000000  00000000  0002a4a3  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  14 .debug_aranges 000007b8  00000000  00000000  0002bc60  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -354,13 +354,13 @@ Disassembly of section .text:
 080004fc <LCD5110_init>:
 
 
-
-
+// =============================================================================================================================
+// ---- Configuração dos Pinos IO ----
 void LCD5110_init()
 {
  80004fc:	b580      	push	{r7, lr}
  80004fe:	af00      	add	r7, sp, #0
-
+// Como os pinos estão configurados pelo IOC, não precisa configurar pela LCD_config
 //	LCD5110_GPIO_Config();
 
 	LCD5110_DC(1);//LCD_DC = 1;
@@ -390,7 +390,7 @@ void LCD5110_init()
  800052a:	2100      	movs	r1, #0
  800052c:	2021      	movs	r0, #33	; 0x21
  800052e:	f000 f818 	bl	8000562 <LCD5110_LCD_write_byte>
-	LCD5110_LCD_write_byte(0xc6,0); //sets the display contrast
+	LCD5110_LCD_write_byte(0xc6,0); //ajusta o contraste do display
  8000532:	2100      	movs	r1, #0
  8000534:	20c6      	movs	r0, #198	; 0xc6
  8000536:	f000 f814 	bl	8000562 <LCD5110_LCD_write_byte>
@@ -418,6 +418,8 @@ void LCD5110_init()
 
 08000562 <LCD5110_LCD_write_byte>:
 
+// -----------------------------------------------------------------------------------------------------------------------------
+// ---- Função para escrever um byte no display ----
 void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode)
 {
  8000562:	b580      	push	{r7, lr}
@@ -488,7 +490,8 @@ void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode)
  80005ca:	bd80      	pop	{r7, pc}
 
 080005cc <LCD5110_write_char>:
-
+// -----------------------------------------------------------------------------------------------------------------------------
+// ---- Função para escrever um caractere no display ----
 void LCD5110_write_char(unsigned char c)
 {
  80005cc:	b580      	push	{r7, lr}
@@ -500,6 +503,8 @@ void LCD5110_write_char(unsigned char c)
 	unsigned char ch = 0;
  80005d6:	2300      	movs	r3, #0
  80005d8:	73bb      	strb	r3, [r7, #14]
+
+	// a função chama a write_byte para escrever o caractere no display
 
 	c = c - 32;
  80005da:	79fb      	ldrb	r3, [r7, #7]
@@ -546,10 +551,10 @@ void LCD5110_write_char(unsigned char c)
  800061c:	20000000 	.word	0x20000000
 
 08000620 <LCD5110_write_string>:
-		
-	}
 }
 
+// -----------------------------------------------------------------------------------------------------------------------------
+// ---- Função para escrever uma string no display ----
 void LCD5110_write_string(char *s)
 {
  8000620:	b580      	push	{r7, lr}
@@ -587,12 +592,14 @@ void LCD5110_write_string(char *s)
 
 08000650 <LCD5110_clear>:
 
-
+// -----------------------------------------------------------------------------------------------------------------------------
+// ---- Função para limpar display ----
 void LCD5110_clear()
 {
  8000650:	b580      	push	{r7, lr}
  8000652:	b082      	sub	sp, #8
  8000654:	af00      	add	r7, sp, #0
+	// limpa o display escrevendo 0 em todos os pixels
 	unsigned char i,j;
 	for(i=0;i<6;i++)
  8000656:	2300      	movs	r3, #0
@@ -629,6 +636,8 @@ void LCD5110_clear()
 
 0800068c <LCD5110_set_XY>:
 
+// -----------------------------------------------------------------------------------------------------------------------------
+// ---- Função para setar a posição XY no display ----
 void LCD5110_set_XY(unsigned char X,unsigned char Y)
 {
  800068c:	b580      	push	{r7, lr}
@@ -702,10 +711,10 @@ void LCD5110_LCD_delay_ms(unsigned int nCount)
 	...
 
 08000700 <LCD5110_CS>:
-	PORT->MODER|=(1<<(LCD_DC*2));	//seta os bits
 
-}
-*/
+// =============================================================================================================================
+// ---- Funções para configurar os pinos ----
+
 void LCD5110_CS(unsigned char temp)
 {
  8000700:	b480      	push	{r7}

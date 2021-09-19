@@ -5,7 +5,8 @@
 #include "grafic.h"
 
 
-
+// =============================================================================================================================
+// ---- Configuração dos Pinos IO ----
 #define LCD_CS 	12 		//CE
 #define LCD_RST 10 		//RST
 #define LCD_MO	15		//DIN
@@ -39,10 +40,11 @@ void LCD5110_DC(unsigned char temp);
 
 
 
-
+// =============================================================================================================================
+// ---- Configuração dos Pinos IO ----
 void LCD5110_init()
 {
-
+// Como os pinos estão configurados pelo IOC, não precisa configurar pela LCD_config
 //	LCD5110_GPIO_Config();
 
 	LCD5110_DC(1);//LCD_DC = 1;
@@ -55,7 +57,7 @@ void LCD5110_init()
 	LCD5110_RST(1);//LCD_RST = 1;
 
 	LCD5110_LCD_write_byte(0x21,0);
-	LCD5110_LCD_write_byte(0xc6,0); //sets the display contrast
+	LCD5110_LCD_write_byte(0xc6,0); //ajusta o contraste do display
 	LCD5110_LCD_write_byte(0x06,0);
 	LCD5110_LCD_write_byte(0x13,0);
 	LCD5110_LCD_write_byte(0x20,0);
@@ -63,6 +65,8 @@ void LCD5110_init()
 	LCD5110_LCD_write_byte(0x0c,0);
 }
 
+// -----------------------------------------------------------------------------------------------------------------------------
+// ---- Função para escrever um byte no display ----
 void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode)
 {
 	unsigned char i;
@@ -85,11 +89,14 @@ void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode)
 	LCD5110_CS(1);//SPI_CS = 1;
 
 }
-
+// -----------------------------------------------------------------------------------------------------------------------------
+// ---- Função para escrever um caractere no display ----
 void LCD5110_write_char(unsigned char c)
 {
 	unsigned char line;
 	unsigned char ch = 0;
+
+	// a função chama a write_byte para escrever o caractere no display
 
 	c = c - 32;
 
@@ -115,6 +122,8 @@ void LCD5110_write_char_reg(unsigned char c)
 	}
 }
 
+// -----------------------------------------------------------------------------------------------------------------------------
+// ---- Função para escrever uma string no display ----
 void LCD5110_write_string(char *s)
 {
 	unsigned char ch;
@@ -126,15 +135,19 @@ void LCD5110_write_string(char *s)
 	}
 }
 
-
+// -----------------------------------------------------------------------------------------------------------------------------
+// ---- Função para limpar display ----
 void LCD5110_clear()
 {
+	// limpa o display escrevendo 0 em todos os pixels
 	unsigned char i,j;
 	for(i=0;i<6;i++)
 		for(j=0;j<84;j++)
 			LCD5110_LCD_write_byte(0,1);	
 }
 
+// -----------------------------------------------------------------------------------------------------------------------------
+// ---- Função para setar a posição XY no display ----
 void LCD5110_set_XY(unsigned char X,unsigned char Y)
 {
 	unsigned char x;
@@ -144,6 +157,8 @@ void LCD5110_set_XY(unsigned char X,unsigned char Y)
 	LCD5110_LCD_write_byte(0x80|x,0);
 }
 
+// -----------------------------------------------------------------------------------------------------------------------------
+// ---- Função para escrever um número no display ----
 void LCD5110_Write_Dec(unsigned int b)
 {
 
@@ -197,6 +212,10 @@ void LCD5110_GPIO_Config()
 
 }
 */
+
+// =============================================================================================================================
+// ---- Funções para configurar os pinos ----
+
 void LCD5110_CS(unsigned char temp)
 {
 	if (temp) PORT->ODR|=1<<LCD_CS;
@@ -288,6 +307,9 @@ void LCD5110_disableSleep()
    update();
 }
 */
+
+// =============================================================================================================================
+// ---- Função para escrever no buffer ----
 void LCD5110_update()
 {
 //   if (_sleep==false)
