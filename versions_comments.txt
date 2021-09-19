@@ -3,3 +3,9 @@
 
 	- attolic code changed by the teacher to work in STMCubeIDE;
 	- Display OK!
+
+# commit 02 - Comentarios nas funções da LCD.c
+* 3313c42ffb57a839ee3c19087235dc3b0cc4ffe3
+
+	- Funções da LCD.c documentadas
+	- Display OK!

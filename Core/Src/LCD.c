@@ -3,7 +3,8 @@
 #include "LCD.h"
 #include "font.h"
 #include "grafic.h"
-
+//#include "spi.h" 				// usar a SPI do HAL
+#include "stm32f4xx_hal_spi.h"	// possui a declaração do tipo handler da SPI
 
 // =============================================================================================================================
 // ---- Configuração dos Pinos IO ----
@@ -24,6 +25,8 @@
 
  int scrbuf[504];
 
+ // declaração do ponteiro pra SPI selecionada
+ SPI_HandleTypeDef *phspi;
 
 //Define the LCD Operation function
 void LCD5110_LCD_write_byte(unsigned char dat,unsigned char LCD5110_MOde);
@@ -31,8 +34,9 @@ void LCD5110_LCD_delay_ms(unsigned int t);
 
 //Define the hardware operation function
 void LCD5110_GPIO_Config(void);
-void LCD5110_SCK(unsigned char temp);
-void LCD5110_MO(unsigned char temp);
+// Precisa comentar essas também!
+//void LCD5110_SCK(unsigned char temp);
+//void LCD5110_MO(unsigned char temp);
 void LCD5110_CS(unsigned char temp);
 void LCD5110_RST(unsigned char temp);
 void LCD5110_DC(unsigned char temp);
@@ -42,15 +46,21 @@ void LCD5110_DC(unsigned char temp);
 
 // =============================================================================================================================
 // ---- Configuração dos Pinos IO ----
-void LCD5110_init()
+void LCD5110_init(SPI_HandleTypeDef *hspi)
 {
+	// phspi irá apontar pro endereço de dados da SPI escolhida
+	phspi = hspi;
+
 // Como os pinos estão configurados pelo IOC, não precisa configurar pela LCD_config
 //	LCD5110_GPIO_Config();
 
 	LCD5110_DC(1);//LCD_DC = 1;
-	LCD5110_MO(1);//SPI_MO = 1;
-	LCD5110_SCK(1);//SPI_SCK = 1;
 	LCD5110_CS(1);//SPI_CS = 1;
+
+	// Ambos agora serão feitos pela SPI 2
+	//LCD5110_SCK(1);//SPI_SCK = 1;
+	//LCD5110_MO(1);//SPI_MO = 1;
+
 
 	LCD5110_RST(0);//LCD_RST = 0;
 	LCD5110_LCD_delay_ms(10);
@@ -77,7 +87,7 @@ void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode)
 		LCD5110_DC(0);//LCD_DC = 0;
 	else
 		LCD5110_DC(1);//LCD_DC = 1;
-
+/*
 	for(i=0;i<8;i++)
 	{
 		LCD5110_MO(dat & 0x80);//SPI_MO = dat & 0x80;
@@ -85,6 +95,17 @@ void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode)
 		LCD5110_SCK(0);//SPI_SCK = 0;
 		LCD5110_SCK(1);//SPI_SCK = 1;
 	}
+*/
+
+	/* Antes, a interface SPI era feita pelo software
+	 * 	- abaixava o chip select;
+	 * 	- definia o que ia transmitir: dado ou comando
+	 * 	- transmitia os dados num for, levantando e abaixando o clock
+	 * 	- levantava o CS
+	 */
+
+	// Transmissão dos dados feitos pela SPI do HAL
+	HAL_SPI_Transmit(phspi, &dat, 1, 200);
 
 	LCD5110_CS(1);//SPI_CS = 1;
 

@@ -1,4 +1,4 @@
-void LCD5110_init(void);
+void LCD5110_init(SPI_HandleTypeDef *hspi);
 
 void LCD5110_write_char(unsigned char c);
 
