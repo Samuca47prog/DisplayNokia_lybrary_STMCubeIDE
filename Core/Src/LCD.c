@@ -3,9 +3,10 @@
 #include "LCD.h"
 #include "font.h"
 #include "grafic.h"
-//#include "spi.h" 				// usar a SPI do HAL
-#include "stm32f4xx_hal_spi.h"	// possui a declaração do tipo handler da SPI
+#include "stm32f4xx_hal_spi.h"
+#include "stm32f4xx_hal_gpio.h"
 
+/*
 // =============================================================================================================================
 // ---- Configuração dos Pinos IO ----
 #define LCD_CS 	12 		//CE
@@ -14,7 +15,9 @@
 #define LCD_SCK	13      //CLK
 #define LCD_DC	14 		//DO
 #define PORT	GPIOB	//GPIO onde esta o display
-
+*/
+#define LCD_RST 10 		//RST
+#define PORT	GPIOB	//GPIO onde esta o display
 
 #define LEFT 0
 #define RIGHT 9999
@@ -25,46 +28,43 @@
 
  int scrbuf[504];
 
- // declaração do ponteiro pra SPI selecionada
- SPI_HandleTypeDef *phspi;
+ // manipulador do display
+ LCD_HandleTypeDef *lcd;
 
 //Define the LCD Operation function
-void LCD5110_LCD_write_byte(unsigned char dat,unsigned char LCD5110_MOde);
+void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode);
 void LCD5110_LCD_delay_ms(unsigned int t);
 
 //Define the hardware operation function
-void LCD5110_GPIO_Config(void);
-// Precisa comentar essas também!
-//void LCD5110_SCK(unsigned char temp);
-//void LCD5110_MO(unsigned char temp);
-void LCD5110_CS(unsigned char temp);
+//void LCD5110_CS(unsigned char temp);
 void LCD5110_RST(unsigned char temp);
-void LCD5110_DC(unsigned char temp);
+//void LCD5110_DC(unsigned char temp);
 
-
-
+// Variáveis para generalização dos pinos
+//GPIO_TypeDef	*Port_DC;
+//uint16_t		 Pin_DC;
+//GPIO_TypeDef	*Port_CS;
+//uint16_t		 Pin_CS;
 
 // =============================================================================================================================
 // ---- Configuração dos Pinos IO ----
-void LCD5110_init(SPI_HandleTypeDef *hspi)
+void LCD5110_init(LCD_HandleTypeDef *hlcd5110)
 {
 	// phspi irá apontar pro endereço de dados da SPI escolhida
-	phspi = hspi;
+	lcd = hlcd5110;
 
-// Como os pinos estão configurados pelo IOC, não precisa configurar pela LCD_config
-//	LCD5110_GPIO_Config();
-
-	LCD5110_DC(1);//LCD_DC = 1;
-	LCD5110_CS(1);//SPI_CS = 1;
-
-	// Ambos agora serão feitos pela SPI 2
-	//LCD5110_SCK(1);//SPI_SCK = 1;
-	//LCD5110_MO(1);//SPI_MO = 1;
+	// agora o HAL vai controlar os pinos de CS e de DS
+	HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 1);
+	HAL_GPIO_WritePin(lcd->DC_Port, lcd->DC_Pin, 1);
+	// Antes:
+	//LCD5110_DC(1);//LCD_DC = 1;
+	//LCD5110_CS(1);//SPI_CS = 1;
 
 
 	LCD5110_RST(0);//LCD_RST = 0;
 	LCD5110_LCD_delay_ms(10);
 	LCD5110_RST(1);//LCD_RST = 1;
+
 
 	LCD5110_LCD_write_byte(0x21,0);
 	LCD5110_LCD_write_byte(0xc6,0); //ajusta o contraste do display
@@ -79,37 +79,19 @@ void LCD5110_init(SPI_HandleTypeDef *hspi)
 // ---- Função para escrever um byte no display ----
 void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode)
 {
-	unsigned char i;
+	// define se é dado ou comando
+	HAL_GPIO_WritePin(lcd->DC_Port, lcd->DC_Pin, mode);
 
-	LCD5110_CS(0);//SPI_CS = 0;
-
-	if (0 == mode)
-		LCD5110_DC(0);//LCD_DC = 0;
-	else
-		LCD5110_DC(1);//LCD_DC = 1;
-/*
-	for(i=0;i<8;i++)
-	{
-		LCD5110_MO(dat & 0x80);//SPI_MO = dat & 0x80;
-		dat = dat<<1;
-		LCD5110_SCK(0);//SPI_SCK = 0;
-		LCD5110_SCK(1);//SPI_SCK = 1;
-	}
-*/
-
-	/* Antes, a interface SPI era feita pelo software
-	 * 	- abaixava o chip select;
-	 * 	- definia o que ia transmitir: dado ou comando
-	 * 	- transmitia os dados num for, levantando e abaixando o clock
-	 * 	- levantava o CS
-	 */
+	// habilita o chip select
+	HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 0);
 
 	// Transmissão dos dados feitos pela SPI do HAL
-	HAL_SPI_Transmit(phspi, &dat, 1, 200);
+	HAL_SPI_Transmit(lcd->hspi, &dat, 1, 200);
 
-	LCD5110_CS(1);//SPI_CS = 1;
-
+	// desabilita o chip select
+	HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 1);
 }
+
 // -----------------------------------------------------------------------------------------------------------------------------
 // ---- Função para escrever um caractere no display ----
 void LCD5110_write_char(unsigned char c)
@@ -212,31 +194,19 @@ void LCD5110_LCD_delay_ms(unsigned int nCount)
 	t = nCount * 40000;
 	while(t--);
 }
- /*
-void LCD5110_GPIO_Config()
-{
 
-	PORT->MODER&=~(3<<(LCD_CS*2));	//limpa os bits
-	PORT->MODER|=(1<<(LCD_CS*2));	//seta os bits
-
-	PORT->MODER&=~(3<<(LCD_RST*2));	//limpa os bits
-	PORT->MODER|=(1<<(LCD_RST*2));	//seta os bits
-
-	PORT->MODER&=~(3<<(LCD_MO*2));	//limpa os bits
-	PORT->MODER|=(1<<(LCD_MO*2));	//seta os bits
-
-	PORT->MODER&=~(3<<(LCD_SCK*2));	//limpa os bits
-	PORT->MODER|=(1<<(LCD_SCK*2));	//seta os bits
-
-	PORT->MODER&=~(3<<(LCD_DC*2));	//limpa os bits
-	PORT->MODER|=(1<<(LCD_DC*2));	//seta os bits
-
-}
-*/
 
 // =============================================================================================================================
 // ---- Funções para configurar os pinos ----
 
+void LCD5110_RST(unsigned char temp)
+{
+	if (temp) PORT->ODR|=1<<LCD_RST;
+	else PORT->ODR&=~(1<<LCD_RST);
+
+}
+
+/*
 void LCD5110_CS(unsigned char temp)
 {
 	if (temp) PORT->ODR|=1<<LCD_CS;
@@ -245,12 +215,6 @@ void LCD5110_CS(unsigned char temp)
 
 }
 
-void LCD5110_RST(unsigned char temp)
-{
-	if (temp) PORT->ODR|=1<<LCD_RST;
-	else PORT->ODR&=~(1<<LCD_RST);
-
-}
 
 void LCD5110_DC(unsigned char temp)
 {
@@ -271,8 +235,9 @@ void LCD5110_SCK(unsigned char temp)
 	if (temp) PORT->ODR|=1<<LCD_SCK;
 	else PORT->ODR&=~(1<<LCD_SCK);
 }
+*/
 
-/* Para usar a fun��o printf */
+/* Para usar a função printf */
 int _write(int file, char *ptr, int len)
 {
   int i=0;

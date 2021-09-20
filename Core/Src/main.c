@@ -49,6 +49,8 @@
 
 /* USER CODE BEGIN PV */
 uint16_t a;
+
+LCD_HandleTypeDef hlcd; // handle do display
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -93,8 +95,20 @@ int main(void)
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
 
-  	//  indica a SPI que tu vai usar
-	LCD5110_init(&hspi2);
+  // ====================================================================================
+  // --- Configurações do hardware do display ---
+  	hlcd.hspi = &hspi2;
+
+  	hlcd.CS_Port = NK_CS_GPIO_Port;
+  	hlcd.CS_Pin = NK_CS_Pin;
+
+  	hlcd.DC_Port = NK_DC_GPIO_Port;
+  	hlcd.DC_Pin = NK_DC_Pin;
+
+  	// manda a estrutura de dados com as configurações do display pra inicialização
+	LCD5110_init(&hlcd);
+
+
 	LCD5110_set_XY(0, 0);
 	LCD5110_write_string("Hello World");
 	LCD5110_set_XY(0, 2);
