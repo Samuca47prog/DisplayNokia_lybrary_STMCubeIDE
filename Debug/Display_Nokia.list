@@ -27,23 +27,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  00020234  2**0
                   CONTENTS, READONLY
- 12 .debug_info   000095f0  00000000  00000000  00020264  2**0
+ 12 .debug_info   00009722  00000000  00000000  00020264  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 000019f4  00000000  00000000  00029854  2**0
+ 13 .debug_abbrev 000019f4  00000000  00000000  00029986  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_aranges 00000798  00000000  00000000  0002b248  2**3
+ 14 .debug_aranges 000007b8  00000000  00000000  0002b380  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_ranges 000006c0  00000000  00000000  0002b9e0  2**3
+ 15 .debug_ranges 000006e0  00000000  00000000  0002bb38  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_macro  00021287  00000000  00000000  0002c0a0  2**0
+ 16 .debug_macro  00021287  00000000  00000000  0002c218  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   00009c6e  00000000  00000000  0004d327  2**0
+ 17 .debug_line   00009d3c  00000000  00000000  0004d49f  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    000c7d7d  00000000  00000000  00056f95  2**0
+ 18 .debug_str    000c7dd5  00000000  00000000  000571db  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000053  00000000  00000000  0011ed12  2**0
+ 19 .comment      00000053  00000000  00000000  0011efb0  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00001d58  00000000  00000000  0011ed68  2**2
+ 20 .debug_frame  00001dec  00000000  00000000  0011f004  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -505,6 +505,7 @@ void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode)
  80005e8:	20000250 	.word	0x20000250
 
 080005ec <LCD5110_write_char>:
+}
 
 // -----------------------------------------------------------------------------------------------------------------------------
 // ---- Função para escrever um caractere no display ----
@@ -567,7 +568,7 @@ void LCD5110_write_char(unsigned char c)
  800063c:	20000000 	.word	0x20000000
 
 08000640 <LCD5110_write_string>:
-}
+
 
 // -----------------------------------------------------------------------------------------------------------------------------
 // ---- Função para escrever uma string no display ----

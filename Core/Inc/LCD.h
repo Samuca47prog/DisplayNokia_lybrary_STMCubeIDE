@@ -23,6 +23,18 @@ void LCD5110_write_string(char *s);
 
 void LCD5110_write_Dec(unsigned int buffer);
 
+// ----------------------------------------------------------------------------------------------------------
+// --- Funções adcionadas na aula 2 ---
+
+void LCD5110_LCD_write(uint8_t *data, uint16_t tam, uint8_t mode);
+
+void LCD5110_drawchar(char c, uint8_t *dat);
+
+void LCD5110_new_write_char(unsigned char c);
+
+void LCD5110_new_write_string(char *s);
+
+// ----------------------------------------------------------------------------------------------------------
 
 void enableSleep();
 		void disableSleep();

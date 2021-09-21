@@ -93,6 +93,63 @@ void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode)
 }
 
 // -----------------------------------------------------------------------------------------------------------------------------
+// ---- Função para enviar um bloco de dados ao display ----
+/**
+ * 	Essa função é mais otimizada que a anterior, pois ela envia um bloco de dados de uma vez só
+ * 	Não é necessário chamar ela 6x para escrever um caractere, mas sim enviar o dado como um todo e indicar o seu tamanho
+ * 	Há ganho de tempo, visto que o CS será mudado só uma vez
+ *
+ * 	A ideia é que essa função seja o ponto final de qualquer envio de dados ao display;
+ * 	Assim será muito simples implementar o envio por DMA, por exemplo
+ */
+void LCD5110_LCD_write(uint8_t *data, uint16_t tam, uint8_t mode)
+{
+	// define se é dado ou comando
+	HAL_GPIO_WritePin(lcd->DC_Port, lcd->DC_Pin, mode);
+
+	// habilita o chip select
+	HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 0);
+
+	// Agora será transmitido um bloco de tamanho tam de dados
+	HAL_SPI_Transmit(lcd->hspi, data, tam, 200);
+
+	// desabilita o chip select
+	HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 1);
+}
+
+// -----------------------------------------------------------------------------------------------------------------------------
+// ---- Função para desenhar um caractere no display ----
+/**
+ * 	A função recebe um caractere e monta os seus respectivos dados (gráficos no display)
+ * 	em um ponteiro passado, que irá apontar para um vetor buffer
+ */
+void LCD5110_drawchar(char c, uint8_t *dat)
+{
+	uint8_t i;
+
+	c = c - ' ';
+
+	// pega o byte da biblioteca fonte6_8 e salva no buffer dado
+	for(i=0;i<6;i++)
+	{
+		*dat = font6_8[c][i];
+		dat++;
+	}
+}
+
+// -----------------------------------------------------------------------------------------------------------------------------
+// ---- Função para escrever um caractere no display ----
+void LCD5110_new_write_char(unsigned char c)
+{
+	// buffer onde estarão os dados do caractere
+	uint8_t caract[6];
+	// preenche o buffer caract com os dados do caractere c pedido
+	LCD5110_drawchar(c, caract);
+	// manda os dados do caractere à funçâo de escrever no display
+	LCD5110_LCD_write(caract, 6, 1);
+}
+
+// -----------------------------------------------------------------------------------------------------------------------------
 // ---- Função para escrever um caractere no display ----
 void LCD5110_write_char(unsigned char c)
 {
@@ -124,6 +181,31 @@ void LCD5110_write_char_reg(unsigned char c)
 		
 	}
 }
+
+// -----------------------------------------------------------------------------------------------------------------------------
+// ---- Função para escrever uma string no display ----
+void LCD5110_new_write_string(char *s)
+{
+	uint8_t strf[6*16];
+	uint16_t tam=0;
+	uint8_t *c;
+
+	// aponta para o vetor dos dados do caractere
+	c=strf;
+
+	// passa pela string pedida até encontrar o seu final
+  	while(*s!='\0')
+	{
+  		// monta caractere por caractere no buffer strf, apontado por c
+  		LCD5110_drawchar(*s, c);
+		s++;
+		c+=6;
+		tam++; // define quantos caracteres foram passados
+	}
+
+  	LCD5110_LCD_write(strf, tam, 1);
+}
+
 
 // -----------------------------------------------------------------------------------------------------------------------------
 // ---- Função para escrever uma string no display ----
