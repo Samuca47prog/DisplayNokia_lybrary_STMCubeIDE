@@ -110,9 +110,10 @@ int main(void)
 
 
 	LCD5110_set_XY(0, 0);
-	LCD5110_write_string("Hello World");
+	//LCD5110_write_string("Hello World");
+	LCD5110_write_str("Hello World");
 	LCD5110_set_XY(0, 2);
-	LCD5110_write_string("Estou Vivo");
+	//LCD5110_write_string("Estou Vivo");
 	HAL_Delay(DISP_DELAY);
 
   /* USER CODE END 2 */
@@ -124,41 +125,35 @@ int main(void)
 
 	   	LCD5110_clear();
 	   	LCD5110_set_XY(0,0);
-	   	LCD5110_write_string("ABCDEFGHIJKLMNOPWRSTUVXYZ   abcdefghijklmnopqrstuvxyz   1234567890");
-
-
+	   	LCD5110_write_str("ABCDEFGHIJKLMNOPWRSTUVXYZ   abcdefghijklmnopqrstuvxyz   1234567890");
 	   	HAL_Delay(DISP_DELAY);
+
+
 		LCD5110_clear();
 		LCD5110_set_XY(0,0);
-
+		LCD_write(liber_bmp2,500,1);
+		/*
 		for (a=0;a<=500;a++){
 			LCD5110_LCD_write_byte(liber_bmp2[a],1);
-
-
-
 		}
+		*/
 		HAL_Delay(DISP_DELAY);
+
+		// escrever um caractere
+	   	LCD5110_clear();
+	   	LCD5110_set_XY(0,0);
+	   	LCD5110_write_str("s");
+	   	HAL_Delay(DISP_DELAY);
+
+
+/*
 		LCD5110_clear();
 		LCD5110_set_XY(0,0);
 		for (a=0;a<=500;a++){
 			LCD5110_LCD_write_byte(liber_bmp3[a],1);
 		}
 		HAL_Delay(DISP_DELAY);
-/*
-		LCD5110_drawLine(0,  0,  84,  48);
-		LCD5110_drawCircle(42, 24, 15);
-		LCD5110_drawRoundRect(10, 10, 60, 40);
 
-
-		HAL_Delay(DISP_DELAY);
-		LCD5110_clear();
-		LCD5110_set_XY(0, 0);
-		LCD5110_write_string("Funcao printf");
-
-		LCD5110_set_XY(0, 4);
-
-		printf("eu uso printf=%i",a);
-		HAL_Delay(DISP_DELAY);
 */
 
     /* USER CODE END WHILE */
