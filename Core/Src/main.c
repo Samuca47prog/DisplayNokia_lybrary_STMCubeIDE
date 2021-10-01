@@ -105,6 +105,9 @@ int main(void)
   	hlcd.DC_Port = NK_DC_GPIO_Port;
   	hlcd.DC_Pin = NK_DC_Pin;
 
+  	hlcd.RS_Port = NK_RS_GPIO_Port;
+  	hlcd.RS_Pin = NK_RS_Pin;
+
   	// manda a estrutura de dados com as configurações do display pra inicialização
 	LCD5110_init(&hlcd);
 

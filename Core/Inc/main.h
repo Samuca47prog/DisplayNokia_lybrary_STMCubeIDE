@@ -60,8 +60,8 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define NK_CS_t_Pin GPIO_PIN_0
 #define NK_CS_t_GPIO_Port GPIOC
-#define NK_RST_Pin GPIO_PIN_10
-#define NK_RST_GPIO_Port GPIOB
+#define NK_RS_Pin GPIO_PIN_10
+#define NK_RS_GPIO_Port GPIOB
 #define NK_CS_Pin GPIO_PIN_12
 #define NK_CS_GPIO_Port GPIOB
 #define NK_CLK_Pin GPIO_PIN_13

@@ -2,11 +2,15 @@ typedef struct
 {
 	SPI_HandleTypeDef *hspi;		// Handler pra SPI usada
 
-	GPIO_TypeDef 	*CS_Port;		// Porta do CS
+	GPIO_TypeDef 	*CS_Port;		// Porta do Chip select
 	uint16_t 		CS_Pin;			// Pino do CS
 
-	GPIO_TypeDef 	*DC_Port;		// Porta do DC
+	GPIO_TypeDef 	*DC_Port;		// Porta do Dado ou comando
 	uint16_t 		DC_Pin;			// Pino do DC
+
+	GPIO_TypeDef 	*RS_Port;		// Porta do Reset
+	uint16_t 		RS_Pin;			// Pino do DC
+
 }LCD_HandleTypeDef;
 
 void LCD5110_init(LCD_HandleTypeDef *hlcd5110);

@@ -8,10 +8,6 @@
 #include "grafic.h"
 
 
-#define LCD_RST 10 		//RST
-#define PORT	GPIOB	//GPIO onde esta o display
-
-
 #define LEFT 0
 #define RIGHT 9999
 #define CENTER 9998
@@ -38,10 +34,7 @@ const uint8_t TelaLimpa[TAMBUF]={0};
 
 //Define the LCD Operation function
 void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode);
-void LCD5110_LCD_delay_ms(unsigned int t);
 
-
-void LCD5110_RST(unsigned char temp);
 
 
 // =============================================================================================================================
@@ -55,12 +48,9 @@ void LCD5110_init(LCD_HandleTypeDef *hlcd5110)
 	HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 1);
 	HAL_GPIO_WritePin(lcd->DC_Port, lcd->DC_Pin, 1);
 
-
-	LCD5110_RST(0);//LCD_RST = 0;
-	LCD5110_LCD_delay_ms(10);
-	LCD5110_RST(1);//LCD_RST = 1;
-	// reset agora é feito pelo pino de reset do ARM
-
+	HAL_GPIO_WritePin(lcd->RS_Port, lcd->RS_Pin, 0);
+	HAL_Delay(10);
+	HAL_GPIO_WritePin(lcd->RS_Port, lcd->RS_Pin, 1);
 
 	LCD5110_LCD_write_byte(0x21,0);
 	LCD5110_LCD_write_byte(0xc6,0); //ajusta o contraste do display
@@ -216,24 +206,8 @@ void LCD5110_set_XY(unsigned char X,unsigned char Y)
 
 
 
-void LCD5110_LCD_delay_ms(unsigned int nCount)
-{
-  unsigned long t;
-	t = nCount * 40000;
-	while(t--);
-}
-
-
 // =============================================================================================================================
 // ---- Funções para configurar os pinos ----
-
-
-void LCD5110_RST(unsigned char temp)
-{
-	if (temp) PORT->ODR|=1<<LCD_RST;
-	else PORT->ODR&=~(1<<LCD_RST);
-
-}
 
 
 
