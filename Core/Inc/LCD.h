@@ -38,7 +38,7 @@ void LCD_write_char(unsigned char c);
 
 uint16_t LCD_draw_string(char *s);
 
-void LCD5110_write_str(char *s);
+HAL_StatusTypeDef LCD5110_write_str(char *s);
 
 // ----------------------------------------------------------------------------------------------------------
 

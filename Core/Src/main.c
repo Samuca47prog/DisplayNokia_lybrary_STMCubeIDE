@@ -28,6 +28,7 @@
 #include "LCD.h"
 #include "imagem.h"
 
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -37,7 +38,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define DISP_DELAY 4000
+#define DISP_DELAY 2000
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -135,18 +136,14 @@ int main(void)
 		LCD5110_clear();
 		LCD5110_set_XY(0,0);
 		LCD_write(liber_bmp2,500,1);
-		/*
-		for (a=0;a<=500;a++){
-			LCD5110_LCD_write_byte(liber_bmp2[a],1);
-		}
-		*/
 		HAL_Delay(DISP_DELAY);
 
-		// escrever um caractere
+
 	   	LCD5110_clear();
 	   	LCD5110_set_XY(0,0);
-	   	LCD5110_write_str("s");
+	   	LCD_write(liber_bmp3,500,1);
 	   	HAL_Delay(DISP_DELAY);
+
 
 
 /*

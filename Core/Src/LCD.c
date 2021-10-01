@@ -21,11 +21,26 @@
 #define TAMTELA 	504
 #define TAMBUF 		504
 
+// estados do buffer
+typedef enum {B_FREE=0, B_BUSY} BufStatus_t;
+
+/*
+ * Estrutura de dados para compartilhar o buffer
+ * Auxilia o gerenciamento do buffer
+ */
+typedef struct{
+	uint8_t dado[TAMBUF];
+	BufStatus_t status;
+	uint16_t ocupacao;
+} SharedBuffer_t;
 
 
 // manipulador do display
 static LCD_HandleTypeDef *lcd;
 // declarado como static para garantir que seus dados não serão alterados
+
+// declaração da variável tipo Buffer compartilhado
+static SharedBuffer_t buf;
 
 //Buffer que armazena os dados que são enviados ao display
 static uint8_t Buffer[TAMBUF];
@@ -44,10 +59,15 @@ void LCD5110_init(LCD_HandleTypeDef *hlcd5110)
 	// phspi irá apontar pro endereço de dados da SPI escolhida
 	lcd = hlcd5110;
 
+	//inicialização do buf
+	buf.ocupacao=0;
+	buf.status=B_FREE;
+
 	// inicialização dos pinos de CS e de DS
 	HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 1);
 	HAL_GPIO_WritePin(lcd->DC_Port, lcd->DC_Pin, 1);
 
+	// reset do display
 	HAL_GPIO_WritePin(lcd->RS_Port, lcd->RS_Pin, 0);
 	HAL_Delay(10);
 	HAL_GPIO_WritePin(lcd->RS_Port, lcd->RS_Pin, 1);
@@ -151,7 +171,7 @@ uint16_t LCD_draw_string(char *s)
 
 
 	// aponta para o vetor dos dados do caractere
-	c=Buffer;
+	c=buf.dado;
 
 	// passa pela string pedida até encontrar o seu final
   	while(*s!='\0')
@@ -169,14 +189,26 @@ uint16_t LCD_draw_string(char *s)
 /**
  * 	escreve a string recebida no display
  */
-void LCD5110_write_str(char *s)
+HAL_StatusTypeDef LCD5110_write_str(char *s)
 {
-	// tamnho da string a ser escrita
-	uint16_t tam;
+
+	// testa o estado do buffer
+	if(buf.status==B_BUSY)
+		return HAL_BUSY; //retorna que o buffer está ocupado
+
+	// atualiza o status do buffer
+	buf.status=B_BUSY;
+
 	// preenche o Buffer com os dados de cada caractere e retorna o tamanho final
-	tam = LCD_draw_string(s);
+	buf.ocupacao=LCD_draw_string(s);
+
 	// manda os dados da string à funçâo de escrever no display
-	LCD_write(Buffer, tam, 1);
+	LCD_write(buf.dado, buf.ocupacao, 1);
+
+	// atualiza o status do buffer (para modo pooling)
+	buf.status=B_FREE;
+
+	return HAL_OK;
 }
 
 // --- fim da rotina de desenhar uma string ---
