@@ -43,7 +43,7 @@ static LCD_HandleTypeDef *lcd;
 static SharedBuffer_t buf;
 
 //Buffer que armazena os dados que são enviados ao display
-static uint8_t Buffer[TAMBUF];
+//static uint8_t Buffer[TAMBUF];
 
 const uint8_t TelaLimpa[TAMBUF]={0};
 
@@ -78,6 +78,8 @@ void LCD5110_init(LCD_HandleTypeDef *hlcd5110)
 	LCD5110_LCD_write_byte(0x13,0);
 	LCD5110_LCD_write_byte(0x20,0);
 	LCD5110_clear();
+	// espera transmitir tudo para depois continuar
+	while(__HAL_SPI_GET_FLAG(lcd->hspi, SPI_FLAG_BSY)){};
 	LCD5110_LCD_write_byte(0x0c,0);
 }
 
@@ -122,6 +124,46 @@ void LCD_write(uint8_t *data, uint16_t tam, uint8_t mode)
 
 	// desabilita o chip select
 	HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 1);
+
+	// libera o buffer
+	buf.status = B_FREE;
+}
+
+
+//--------------------------------------------------------------------------------------
+// --- função de transmissão no modo não bloqueante
+HAL_StatusTypeDef LCD_write_IT(uint8_t *data, uint16_t tam, uint8_t mode)
+{
+	HAL_StatusTypeDef status;
+
+	// testa se a SPI está livre
+	if(__HAL_SPI_GET_FLAG(lcd->hspi, SPI_FLAG_BSY))
+		return HAL_BUSY;
+
+	// define se é dado ou comando
+	HAL_GPIO_WritePin(lcd->DC_Port, lcd->DC_Pin, mode);
+
+	// habilita o chip select
+	HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 0);
+
+	// Agora o bloco será transmitido por interrupção
+	status = HAL_SPI_Transmit_IT(lcd->hspi, data, tam);
+
+	return status;
+
+	// Só pode ser levantado depois do final da transmissão
+	//HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 1);
+}
+
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+	if(hspi->Instance == lcd->hspi->Instance)
+	{
+		// levanta o chip select, pois a transmissão acabou
+		HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 1);
+		// libera o buffer
+		buf.status = B_FREE;
+	}
 }
 
 // -----------------------------------------------------------------------------------------------------------------------------
@@ -180,7 +222,7 @@ uint16_t LCD_draw_string(char *s)
   		LCD_draw_char(*s, c);
 		s++;
 		c+=LARGFONTE;
-		tamanho+=LARGFONTE; // define quantos caracteres foram passados !!!!!!!!!!!!!!!!!!!!!!!!!
+		tamanho+=LARGFONTE; // define quantos caracteres foram passados
 	}
 
   	return tamanho;
@@ -191,6 +233,7 @@ uint16_t LCD_draw_string(char *s)
  */
 HAL_StatusTypeDef LCD5110_write_str(char *s)
 {
+	HAL_StatusTypeDef status;
 
 	// testa o estado do buffer
 	if(buf.status==B_BUSY)
@@ -203,30 +246,65 @@ HAL_StatusTypeDef LCD5110_write_str(char *s)
 	buf.ocupacao=LCD_draw_string(s);
 
 	// manda os dados da string à funçâo de escrever no display
-	LCD_write(buf.dado, buf.ocupacao, 1);
+	status = LCD_write_IT(buf.dado, buf.ocupacao, 1);
 
 	// atualiza o status do buffer (para modo pooling)
-	buf.status=B_FREE;
+	//buf.status=B_FREE;
 
-	return HAL_OK;
+	return status;
 }
 
 // --- fim da rotina de desenhar uma string ---
 // -----------------------------------------------------------------------------------------------------------------------------
 
-/**
- * 	monta os dados da string completa
- */
+
+
+HAL_StatusTypeDef LCD5110_clear()
+{
+	HAL_StatusTypeDef status;
+
+	// limpa o display escrevendo 0 em todos os pixels
+	status = LCD_write_IT(TelaLimpa, TAMTELA, 1);
+
+	return status;
+}
+
+/*
 void LCD5110_clear()
 {
 	// limpa o display escrevendo 0 em todos os pixels
 	LCD_write(TelaLimpa, TAMTELA, 1);
 }
-
+*/
 
 
 // -----------------------------------------------------------------------------------------------------------------------------
 // ---- Função para setar a posição XY no display ----
+
+HAL_StatusTypeDef LCD5110_set_XY(uint8_t x, uint8_t y)
+{
+	HAL_StatusTypeDef status;
+
+	// testa o estado do buffer
+	if(buf.status==B_BUSY)
+		return HAL_BUSY; //retorna que o buffer está ocupado
+
+	// atualiza o status
+	buf.status = B_BUSY;
+
+	x *= 6;
+
+	buf.dado[0] = 0x40|y;
+	buf.dado[0] = 0x80|x;
+	buf.ocupacao = 2;
+
+	// envia o comando de setar a posição ao display
+	status = LCD_write_IT(buf.dado, buf.ocupacao, 0);
+
+	return status;
+}
+
+/*
 void LCD5110_set_XY(unsigned char X,unsigned char Y)
 {
 	unsigned char x;
@@ -235,11 +313,8 @@ void LCD5110_set_XY(unsigned char X,unsigned char Y)
 	LCD5110_LCD_write_byte(0x40|Y,0);
 	LCD5110_LCD_write_byte(0x80|x,0);
 }
+*/
 
-
-
-// =============================================================================================================================
-// ---- Funções para configurar os pinos ----
 
 
 

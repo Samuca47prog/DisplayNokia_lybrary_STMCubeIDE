@@ -58,8 +58,6 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define NK_CS_t_Pin GPIO_PIN_0
-#define NK_CS_t_GPIO_Port GPIOC
 #define NK_RS_Pin GPIO_PIN_10
 #define NK_RS_GPIO_Port GPIOB
 #define NK_CS_Pin GPIO_PIN_12

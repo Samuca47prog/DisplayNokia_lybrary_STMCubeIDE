@@ -19,9 +19,11 @@ void LCD5110_write_char(unsigned char c);
 
 void LCD5110_write_char_reg(unsigned char c);
 
-void LCD5110_clear(void);
+// aula 4
+HAL_StatusTypeDef LCD5110_clear(void);
 
-void LCD5110_set_XY(unsigned char X, unsigned char Y);
+// aula 4
+HAL_StatusTypeDef LCD5110_set_XY(uint8_t x, uint8_t y);
 
 void LCD5110_write_string(char *s);
 
@@ -39,6 +41,11 @@ void LCD_write_char(unsigned char c);
 uint16_t LCD_draw_string(char *s);
 
 HAL_StatusTypeDef LCD5110_write_str(char *s);
+
+// ----------------------------------------------------------------------------------------------------------
+// --- Funções adcionadas na aula 4 ---
+
+HAL_StatusTypeDef LCD_write_IT(uint8_t *data, uint16_t tam, uint8_t mode);
 
 // ----------------------------------------------------------------------------------------------------------
 
