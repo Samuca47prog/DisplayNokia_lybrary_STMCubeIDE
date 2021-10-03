@@ -1,3 +1,5 @@
+// ============================================================================================================
+// === Includes ===
 
 #include "stm32f4xx.h"
 #include "stm32f4xx_hal_gpio.h"
@@ -7,26 +9,22 @@
 #include "font.h"
 #include "grafic.h"
 
+// ============================================================================================================
+// === Defines ===
 
-#define LEFT 0
-#define RIGHT 9999
-#define CENTER 9998
-
-#define false 0
-#define true 1
-
-
-// defines da aula 3
 #define LARGFONTE 	6
 #define TAMTELA 	504
 #define TAMBUF 		504
+
+// ============================================================================================================
+// === Tipos ===
 
 // estados do buffer
 typedef enum {B_FREE=0, B_BUSY} BufStatus_t;
 
 /*
  * Estrutura de dados para compartilhar o buffer
- * Auxilia o gerenciamento do buffer
+ * Realiza o gerenciamento do buffer
  */
 typedef struct{
 	uint8_t dado[TAMBUF];
@@ -34,6 +32,8 @@ typedef struct{
 	uint16_t ocupacao;
 } SharedBuffer_t;
 
+// ============================================================================================================
+// === Variaveis ===
 
 // manipulador do display
 static LCD_HandleTypeDef *lcd;
@@ -42,10 +42,10 @@ static LCD_HandleTypeDef *lcd;
 // declaração da variável tipo Buffer compartilhado
 static SharedBuffer_t buf;
 
-//Buffer que armazena os dados que são enviados ao display
-//static uint8_t Buffer[TAMBUF];
-
 const uint8_t TelaLimpa[TAMBUF]={0};
+
+
+
 
 //Define the LCD Operation function
 void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode);
@@ -53,7 +53,8 @@ void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode);
 
 
 // =============================================================================================================================
-//
+// === Funções ===
+
 void LCD5110_init(LCD_HandleTypeDef *hlcd5110)
 {
 	// phspi irá apontar pro endereço de dados da SPI escolhida
@@ -69,7 +70,7 @@ void LCD5110_init(LCD_HandleTypeDef *hlcd5110)
 
 	// reset do display
 	HAL_GPIO_WritePin(lcd->RS_Port, lcd->RS_Pin, 0);
-	HAL_Delay(10);
+	HAL_Delay(100);
 	HAL_GPIO_WritePin(lcd->RS_Port, lcd->RS_Pin, 1);
 
 	LCD5110_LCD_write_byte(0x21,0);
@@ -84,8 +85,7 @@ void LCD5110_init(LCD_HandleTypeDef *hlcd5110)
 }
 
 
-// -----------------------------------------------------------------------------------------------------------------------------
-// ---- Função para escrever um byte no display ----
+// ainda necessária para fazer a configuração inicial
 void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode)
 {
 	// define se é dado ou comando
@@ -100,7 +100,7 @@ void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode)
 	// desabilita o chip select
 	HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 1);
 }
-// ainda necessária para fazer a configuração inicial
+
 
 // -----------------------------------------------------------------------------------------------------------------------------
 // ---- Função para enviar um bloco de dados ao display ----
@@ -186,9 +186,6 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
  *
  */
 
-/**
- * 	monta os dados do caractere
- */
 void LCD_draw_char(char letra, uint8_t *buf)
 {
 	uint8_t i;
@@ -202,10 +199,6 @@ void LCD_draw_char(char letra, uint8_t *buf)
 	}
 }
 
-
-/**
- * 	monta os dados da string completa
- */
 uint16_t LCD_draw_string(char *s)
 {
 	uint8_t *c;
@@ -228,9 +221,6 @@ uint16_t LCD_draw_string(char *s)
   	return tamanho;
 }
 
-/**
- * 	escreve a string recebida no display
- */
 HAL_StatusTypeDef LCD5110_write_str(char *s)
 {
 	HAL_StatusTypeDef status;
@@ -263,19 +253,15 @@ HAL_StatusTypeDef LCD5110_clear()
 {
 	HAL_StatusTypeDef status;
 
+	// testa o estado do buffer
+	if(buf.status==B_BUSY)
+		return HAL_BUSY; //retorna que o buffer está ocupado
+
 	// limpa o display escrevendo 0 em todos os pixels
 	status = LCD_write_IT(TelaLimpa, TAMTELA, 1);
 
 	return status;
 }
-
-/*
-void LCD5110_clear()
-{
-	// limpa o display escrevendo 0 em todos os pixels
-	LCD_write(TelaLimpa, TAMTELA, 1);
-}
-*/
 
 
 // -----------------------------------------------------------------------------------------------------------------------------
@@ -295,7 +281,7 @@ HAL_StatusTypeDef LCD5110_set_XY(uint8_t x, uint8_t y)
 	x *= 6;
 
 	buf.dado[0] = 0x40|y;
-	buf.dado[0] = 0x80|x;
+	buf.dado[1] = 0x80|x;
 	buf.ocupacao = 2;
 
 	// envia o comando de setar a posição ao display
@@ -304,26 +290,4 @@ HAL_StatusTypeDef LCD5110_set_XY(uint8_t x, uint8_t y)
 	return status;
 }
 
-/*
-void LCD5110_set_XY(unsigned char X,unsigned char Y)
-{
-	unsigned char x;
-	x = 6*X;
-
-	LCD5110_LCD_write_byte(0x40|Y,0);
-	LCD5110_LCD_write_byte(0x80|x,0);
-}
-*/
-
-
-
-
-/* Para usar a função printf */
-int _write(int file, char *ptr, int len)
-{
-  int i=0;
-  for(i=0 ; i<len ; i++)
-	  LCD5110_write_char(*ptr++);
-  return len;
-}
 

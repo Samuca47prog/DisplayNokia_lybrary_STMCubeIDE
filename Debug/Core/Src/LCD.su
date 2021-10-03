@@ -1,11 +1,10 @@
-LCD.c:57:6:LCD5110_init	16	static
+LCD.c:58:6:LCD5110_init	16	static
 LCD.c:89:6:LCD5110_LCD_write_byte	16	static
 LCD.c:114:6:LCD_write	16	static
 LCD.c:135:19:LCD_write_IT	24	static
 LCD.c:158:6:HAL_SPI_TxCpltCallback	16	static
-LCD.c:192:6:LCD_draw_char	24	static
-LCD.c:209:10:LCD_draw_string	24	static
-LCD.c:234:19:LCD5110_write_str	24	static
-LCD.c:262:19:LCD5110_clear	16	static
-LCD.c:284:19:LCD5110_set_XY	24	static
-LCD.c:322:5:_write	32	static
+LCD.c:189:6:LCD_draw_char	24	static
+LCD.c:202:10:LCD_draw_string	24	static
+LCD.c:224:19:LCD5110_write_str	24	static
+LCD.c:252:19:LCD5110_clear	16	static
+LCD.c:270:19:LCD5110_set_XY	24	static

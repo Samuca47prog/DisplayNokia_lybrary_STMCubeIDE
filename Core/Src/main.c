@@ -113,20 +113,13 @@ int main(void)
 	LCD5110_init(&hlcd);
 
 	// aula 4
-	while(LCD5110_set_XY(0, 0)!=HAL_OK);
-	while(LCD5110_write_str("Hello World")!=HAL_OK);
-	while(LCD5110_set_XY(0, 2)!=HAL_OK);
-	while(LCD5110_write_str("Estou Vivo")!=HAL_OK);
+	while(LCD5110_set_XY(0, 0)!=HAL_OK){};
+	while(LCD5110_write_str("Hello World")!=HAL_OK){};
+	while(LCD5110_set_XY(0, 2)!=HAL_OK){};
+	while(LCD5110_write_str("Estou Vivo")!=HAL_OK){};
 	//HAL_Delay(DISP_DELAY);
 
-/*
-	LCD5110_set_XY(0, 0);
-	//LCD5110_write_string("Hello World");
-	LCD5110_write_str("Hello World");
-	LCD5110_set_XY(0, 2);
-	//LCD5110_write_string("Estou Vivo");
-	HAL_Delay(DISP_DELAY);
-*/
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
