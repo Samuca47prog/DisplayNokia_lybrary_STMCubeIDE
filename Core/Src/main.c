@@ -20,6 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "spi.h"
+#include "tim.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -39,6 +40,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define DISP_DELAY 2000
+#define DTELA 400; //2s
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -49,6 +51,11 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
+uint16_t delayTela;
+uint8_t me_display;
+uint8_t tela;
+
 uint16_t a;
 
 LCD_HandleTypeDef hlcd; // handle do display
@@ -94,6 +101,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI2_Init();
+  MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
 
   // ====================================================================================
@@ -114,6 +122,9 @@ int main(void)
 
 	// aula 4
 	while(LCD5110_set_XY(0, 0)!=HAL_OK){};
+	//while(LCD5110_write(liber_bmp2, 500)!=HAL_OK);
+
+
 	while(LCD5110_write_str("Hello World")!=HAL_OK){};
 	while(LCD5110_set_XY(0, 2)!=HAL_OK){};
 	while(LCD5110_write_str("Estou Vivo")!=HAL_OK){};
@@ -124,8 +135,74 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+	tela = 1;
+	me_display = 0;
+	delayTela = DTELA;
+
   while (1)
   {
+
+	  if (__HAL_TIM_GET_FLAG(&htim11, TIM_FLAG_UPDATE))
+	  {
+		  __HAL_TIM_CLEAR_FLAG(&htim11, TIM_FLAG_UPDATE);
+
+			  switch(me_display)
+			  {
+			  	case 0:
+			  		delayTela--;
+
+			  		  if (delayTela == 0)
+			  		  {
+			  			  delayTela=DTELA;
+			  			  me_display++;
+			  		  }
+			  	break;
+
+			  	case 1:
+			  		if (LCD5110_clear()==HAL_OK)
+			  		{
+			  			me_display++;
+			  		}
+			  	break;
+
+			  	case 2:
+			  		if (LCD5110_set_XY(0,0)==HAL_OK)
+			  		{
+			  			me_display += tela;
+			  		}
+			  	break;
+
+			  	case 3:
+			  		if (LCD5110_write_str("gremio")==HAL_OK)
+			  		{
+			  			me_display = 0;
+			  			tela++;
+			  		}
+			  	break;
+
+			  	case 4:
+			  		if (LCD5110_write(liber_bmp2, 500)==HAL_OK)
+			  		{
+			  			me_display = 0;
+			  			tela++;
+			  		}
+			  	break;
+
+			  	case 5:
+			  		if (LCD5110_write(liber_bmp3, 500)==HAL_OK)
+			  		{
+			  			me_display = 0;
+			  			tela = 1;
+			  		}
+			  	break;
+
+			  }
+	  }
+
+
+
+
 /*
 	   	LCD5110_clear();
 	   	LCD5110_set_XY(0,0);
