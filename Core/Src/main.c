@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include "LCD.h"
 #include "imagem.h"
+#include "panda.h"
 
 
 /* USER CODE END Includes */
@@ -109,6 +110,8 @@ int main(void)
   // ====================================================================================
   // --- Configurações do hardware do display ---
   	hlcd.hspi = &hspi2;
+
+  	hlcd.Mode = LCD_IT;
 
   	hlcd.CS_Port = NK_CS_GPIO_Port;
   	hlcd.CS_Pin = NK_CS_Pin;
@@ -249,7 +252,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 				if (LCD5110_write_str("MOSTRATEC")==HAL_OK)
 				{
 					me_display = 0;
-					tela = 1;
+					tela++;
+				}
+			break;
+
+			case 6:
+				if (LCD5110_write(panda, 504)==HAL_OK)
+				{
+					me_display = 0;
+					tela=1;
 				}
 			break;
 		  }

@@ -44,11 +44,8 @@ static SharedBuffer_t buf;
 
 const uint8_t TelaLimpa[TAMBUF]={0};
 
+static HAL_StatusTypeDef (*LCD_write)(uint8_t *data, uint16_t tam, uint8_t mode);
 
-
-
-//Define the LCD Operation function
-void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode);
 
 
 
@@ -73,45 +70,77 @@ void LCD5110_init(LCD_HandleTypeDef *hlcd5110)
 	HAL_Delay(100);
 	HAL_GPIO_WritePin(lcd->RS_Port, lcd->RS_Pin, 1);
 
+
+	switch(lcd->Mode)
+	{
+		case LCD_BLK:
+			LCD_write = LCD_write_BLK;
+			break;
+
+		case LCD_IT:
+			LCD_write = LCD_write_IT;
+			break;
+
+		case LCD_DMA:
+			LCD_write = LCD_write_DMA;
+			break;
+	}
+
+	//LCD_write = LCD_write_IT;
+
+
+	LCD5110_clear();
+
+	/*
 	LCD5110_LCD_write_byte(0x21,0);
 	LCD5110_LCD_write_byte(0xc6,0); //ajusta o contraste do display
 	LCD5110_LCD_write_byte(0x06,0);
 	LCD5110_LCD_write_byte(0x13,0);
 	LCD5110_LCD_write_byte(0x20,0);
-	LCD5110_clear();
+
+
+
 	// espera transmitir tudo para depois continuar
 	while(__HAL_SPI_GET_FLAG(lcd->hspi, SPI_FLAG_BSY)){};
 	LCD5110_LCD_write_byte(0x0c,0);
+	 */
+
+
+	buf.dado[0] = 0x21;
+	buf.dado[1] = 0xc6;
+	buf.dado[2] = 0x06;
+	buf.dado[3] = 0x13;
+	buf.dado[4] = 0x20;
+	buf.dado[5] = 0x0c;
+	buf.ocupacao = 6;
+	buf.status = B_BUSY;
+
+	//while(buf.status!=B_FREE){};
+	while(__HAL_SPI_GET_FLAG(lcd->hspi, SPI_FLAG_BSY)){};
+
+	LCD_write_IT(buf.dado, buf.ocupacao, 0);
+
+	//while(buf.status!=B_FREE){};
+	while(__HAL_SPI_GET_FLAG(lcd->hspi, SPI_FLAG_BSY)){};
+
+
+
 }
-
-
-// ainda necessária para fazer a configuração inicial
-void LCD5110_LCD_write_byte(unsigned char dat,unsigned char mode)
-{
-	// define se é dado ou comando
-	HAL_GPIO_WritePin(lcd->DC_Port, lcd->DC_Pin, mode);
-
-	// habilita o chip select
-	HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 0);
-
-	// Transmissão dos dados feitos pela SPI do HAL
-	HAL_SPI_Transmit(lcd->hspi, &dat, 1, 200);
-
-	// desabilita o chip select
-	HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 1);
-}
-
 
 // -----------------------------------------------------------------------------------------------------------------------------
 // ---- Função para enviar um bloco de dados ao display ----
-/**
- * @brief Realiza a transmissão de dados por blocos
- *
- * @param data dados já formatados da informação que se quer escrever
- * @param tam tamanho dos dados
- * @param mode modo: (0)comando, (1)escrita
- */
+
 HAL_StatusTypeDef LCD5110_write(uint8_t *data, uint16_t tam)
+{
+	HAL_StatusTypeDef status;
+
+	// Agora será transmitido um bloco de tamanho tam de dados
+	status = LCD_write(data, tam, 1);
+
+	return status;
+}
+
+HAL_StatusTypeDef LCD_write_BLK(uint8_t *data, uint16_t tam, uint8_t mode)
 {
 	HAL_StatusTypeDef status;
 
@@ -120,20 +149,23 @@ HAL_StatusTypeDef LCD5110_write(uint8_t *data, uint16_t tam)
 		return HAL_BUSY;
 
 	// define se é dado ou comando
-	HAL_GPIO_WritePin(lcd->DC_Port, lcd->DC_Pin, 1);
+	HAL_GPIO_WritePin(lcd->DC_Port, lcd->DC_Pin, mode);
 
 	// habilita o chip select
 	HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 0);
 
-	// Agora será transmitido um bloco de tamanho tam de dados
-	status = HAL_SPI_Transmit_IT(lcd->hspi, data, tam);
+	// Agora o bloco será transmitido por interrupção
+	status = HAL_SPI_Transmit(lcd->hspi, data, tam, 200);
+
+	// levanta o chip select
+	HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 1);
+
+	// libera o buffer
+	buf.status = B_FREE;
 
 	return status;
 }
 
-
-//--------------------------------------------------------------------------------------
-// --- função de transmissão no modo não bloqueante
 HAL_StatusTypeDef LCD_write_IT(uint8_t *data, uint16_t tam, uint8_t mode)
 {
 	HAL_StatusTypeDef status;
@@ -152,10 +184,28 @@ HAL_StatusTypeDef LCD_write_IT(uint8_t *data, uint16_t tam, uint8_t mode)
 	status = HAL_SPI_Transmit_IT(lcd->hspi, data, tam);
 
 	return status;
-
-	// Só pode ser levantado depois do final da transmissão
-	//HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 1);
 }
+
+HAL_StatusTypeDef LCD_write_DMA(uint8_t *data, uint16_t tam, uint8_t mode)
+{
+	HAL_StatusTypeDef status;
+
+	// testa se a SPI está livre
+	if(__HAL_SPI_GET_FLAG(lcd->hspi, SPI_FLAG_BSY))
+		return HAL_BUSY;
+
+	// define se é dado ou comando
+	HAL_GPIO_WritePin(lcd->DC_Port, lcd->DC_Pin, mode);
+
+	// habilita o chip select
+	HAL_GPIO_WritePin(lcd->CS_Port, lcd->CS_Pin, 0);
+
+	// Agora o bloco será transmitido por interrupção
+	status = HAL_SPI_Transmit_DMA(lcd->hspi, data, tam);
+
+	return status;
+}
+
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 {
@@ -238,7 +288,7 @@ HAL_StatusTypeDef LCD5110_write_str(char *s)
 	buf.ocupacao=LCD_draw_string(s);
 
 	// manda os dados da string à funçâo de escrever no display
-	status = LCD_write_IT(buf.dado, buf.ocupacao, 1);
+	status = LCD_write(buf.dado, buf.ocupacao, 1);
 
 	// atualiza o status do buffer (para modo pooling)
 	//buf.status=B_FREE;
@@ -261,7 +311,7 @@ HAL_StatusTypeDef LCD5110_clear()
 
 	buf.status = HAL_BUSY;
 	// limpa o display escrevendo 0 em todos os pixels
-	status = LCD_write_IT(TelaLimpa, TAMTELA, 1);
+	status = LCD_write(TelaLimpa, TAMTELA, 1);
 
 	return status;
 }
@@ -288,13 +338,12 @@ HAL_StatusTypeDef LCD5110_set_XY(uint8_t x, uint8_t y)
 	x &= 0x7f;
 	y &= 0x07;
 
-
 	buf.dado[0] = 0x40|y;
 	buf.dado[1] = 0x80|x;
 	buf.ocupacao = 2;
 
 	// envia o comando de setar a posição ao display
-	status = LCD_write_IT(buf.dado, buf.ocupacao, 0);
+	status = LCD_write(buf.dado, buf.ocupacao, 0);
 
 	return status;
 }

@@ -1,6 +1,12 @@
+typedef enum {
+	LCD_BLK=0, LCD_IT, LCD_DMA
+}LCD_ModeTypeDef;
+
 typedef struct
 {
 	SPI_HandleTypeDef *hspi;		// Handler pra SPI usada
+
+	LCD_ModeTypeDef Mode;			// Guarda o modo de transmissão da SPI
 
 	GPIO_TypeDef 	*CS_Port;		// Porta do Chip select
 	uint16_t 		CS_Pin;			// Pino do CS
@@ -18,6 +24,12 @@ typedef struct
 void LCD5110_init(LCD_HandleTypeDef *hlcd5110);
 
 HAL_StatusTypeDef LCD5110_write(uint8_t *data, uint16_t tam);
+
+HAL_StatusTypeDef LCD_write_BLK(uint8_t *data, uint16_t tam, uint8_t mode);
+
+HAL_StatusTypeDef LCD_write_DMA(uint8_t *data, uint16_t tam, uint8_t mode);
+
+HAL_StatusTypeDef LCD_write_IT(uint8_t *data, uint16_t tam, uint8_t mode);
 
 //---
 
