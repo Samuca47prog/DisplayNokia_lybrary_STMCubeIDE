@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "dma.h"
 #include "spi.h"
 #include "tim.h"
 #include "gpio.h"
@@ -101,6 +102,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_SPI2_Init();
   MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
@@ -111,7 +113,7 @@ int main(void)
   // --- Configurações do hardware do display ---
   	hlcd.hspi = &hspi2;
 
-  	hlcd.Mode = LCD_IT;
+  	hlcd.Mode = LCD_DMA;
 
   	hlcd.CS_Port = NK_CS_GPIO_Port;
   	hlcd.CS_Pin = NK_CS_Pin;
