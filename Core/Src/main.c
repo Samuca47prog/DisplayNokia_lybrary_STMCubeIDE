@@ -1,21 +1,15 @@
 /* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
+
+/*!
+  * ***
+  * <h1>** Display LCD5110 + HALframework  **</h1>
+  * ***
   *
-  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * \author		Samuca
+  * \date		09/21 to 10/21
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
-  *
-  ******************************************************************************
   */
+
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -29,7 +23,7 @@
 #include <stdio.h>
 #include "LCD.h"
 #include "imagem.h"
-#include "panda.h"
+#include "gremio.h"
 
 
 /* USER CODE END Includes */
@@ -41,8 +35,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define DISP_DELAY 2000
+
+// define o delay entre as telas. DTELA=1 --> 5ms.
 #define DTELA 400; //2s
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -127,11 +123,11 @@ int main(void)
   	// manda a estrutura de dados com as configurações do display pra inicialização
 	LCD5110_init(&hlcd);
 
-	// aula 4
+	// Telas iniciais
 	while(LCD5110_set_XY(0, 0)!=HAL_OK){};
-	while(LCD5110_write_str("Hello World")!=HAL_OK){};
-	while(LCD5110_set_XY(0, 2)!=HAL_OK){};
-	while(LCD5110_write_str("Estou Vivo")!=HAL_OK){};
+	while(LCD5110_write_str("Bairro da")!=HAL_OK){};
+	while(LCD5110_set_XY(0, 1)!=HAL_OK){};
+	while(LCD5110_write_str("Azenha")!=HAL_OK){};
 	//HAL_Delay(DISP_DELAY);
 
 
@@ -140,7 +136,7 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-
+	// inicialização das variáveis de controle da tela
 	tela = 1;
 	me_display = 0;
 	delayTela = DTELA;
@@ -235,7 +231,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			break;
 
 			case 3:
-				if (LCD5110_write_str("gremio bora")==HAL_OK)
+				if (LCD5110_write_str("Venho do      bairro da     azenha")==HAL_OK)
 				{
 					me_display = 0;
 					tela++;
@@ -243,7 +239,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			break;
 
 			case 4:
-				if (LCD5110_write(liber_bmp2, 504)==HAL_OK)
+				if (LCD5110_write(gremio, 504)==HAL_OK)
 				{
 					me_display = 0;
 					tela++;
@@ -251,7 +247,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			break;
 
 			case 5:
-				if (LCD5110_write_str("MOSTRATEC")==HAL_OK)
+				if (LCD5110_write_str("bairro do     monumental")==HAL_OK)
 				{
 					me_display = 0;
 					tela++;
@@ -259,7 +255,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			break;
 
 			case 6:
-				if (LCD5110_write(panda, 504)==HAL_OK)
+				if (LCD5110_write(gremio, 504)==HAL_OK)
 				{
 					me_display = 0;
 					tela=1;

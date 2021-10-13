@@ -44,10 +44,11 @@ static SharedBuffer_t buf;
 
 const uint8_t TelaLimpa[TAMBUF]={0};
 
+// ============================================================================================================
+// === Declaração de escopos ===
+
+// ponteiro para funções de transmissão
 static HAL_StatusTypeDef (*LCD_write)(uint8_t *data, uint16_t tam, uint8_t mode);
-
-
-
 
 // =============================================================================================================================
 // === Funções ===
@@ -70,7 +71,7 @@ void LCD5110_init(LCD_HandleTypeDef *hlcd5110)
 	HAL_Delay(100);
 	HAL_GPIO_WritePin(lcd->RS_Port, lcd->RS_Pin, 1);
 
-
+	// seleciona o modo de transmmissão
 	switch(lcd->Mode)
 	{
 		case LCD_BLK:
@@ -86,25 +87,8 @@ void LCD5110_init(LCD_HandleTypeDef *hlcd5110)
 			break;
 	}
 
-	//LCD_write = LCD_write_IT;
-
-
+	// limpa o display
 	LCD5110_clear();
-
-	/*
-	LCD5110_LCD_write_byte(0x21,0);
-	LCD5110_LCD_write_byte(0xc6,0); //ajusta o contraste do display
-	LCD5110_LCD_write_byte(0x06,0);
-	LCD5110_LCD_write_byte(0x13,0);
-	LCD5110_LCD_write_byte(0x20,0);
-
-
-
-	// espera transmitir tudo para depois continuar
-	while(__HAL_SPI_GET_FLAG(lcd->hspi, SPI_FLAG_BSY)){};
-	LCD5110_LCD_write_byte(0x0c,0);
-	 */
-
 
 	buf.dado[0] = 0x21;
 	buf.dado[1] = 0xc6;
@@ -115,20 +99,32 @@ void LCD5110_init(LCD_HandleTypeDef *hlcd5110)
 	buf.ocupacao = 6;
 	buf.status = B_BUSY;
 
-	//while(buf.status!=B_FREE){};
 	while(__HAL_SPI_GET_FLAG(lcd->hspi, SPI_FLAG_BSY)){};
 
 	LCD_write_IT(buf.dado, buf.ocupacao, 0);
 
-	//while(buf.status!=B_FREE){};
 	while(__HAL_SPI_GET_FLAG(lcd->hspi, SPI_FLAG_BSY)){};
-
-
 
 }
 
 // -----------------------------------------------------------------------------------------------------------------------------
-// ---- Função para enviar um bloco de dados ao display ----
+// ---- Funções de transmissão ao display ----
+/*
+ * LCD5110_write é usada pelo usuário para enviar imagens
+ *
+ * Rotina de transmissão de dados pode ser feita de 3 formas:
+ *
+ * 		# LCD_write_BLK
+ * 			- transmissão bloquante
+ *
+ * 		# LCD_write_IT
+ * 			- transmissão por IT
+ *
+ * 		# LCD_write_DMA
+ * 			- transmissão por DMA
+ *
+ */
+
 
 HAL_StatusTypeDef LCD5110_write(uint8_t *data, uint16_t tam)
 {

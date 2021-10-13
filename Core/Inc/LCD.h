@@ -23,6 +23,8 @@ typedef struct
 
 void LCD5110_init(LCD_HandleTypeDef *hlcd5110);
 
+//---
+
 HAL_StatusTypeDef LCD5110_write(uint8_t *data, uint16_t tam);
 
 HAL_StatusTypeDef LCD_write_BLK(uint8_t *data, uint16_t tam, uint8_t mode);
